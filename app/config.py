@@ -9,7 +9,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
     )
-
+    LOG_LEVEL: str = "INFO"
     APP_NAME: str = "Country Service"
     ENVIRONMENT: str = "development"
     MONGODB_URI: str = "mongodb://localhost:27017"

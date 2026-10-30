@@ -1,48 +1,36 @@
+import logging
 from contextlib import asynccontextmanager
+from app.config import settings
+from app.logging_config import configure_logging
+
+configure_logging(settings.LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
-
 from app.database.connection import (
     connect_to_database,
     close_database_connection
 )
-
 from app.database.indexes import create_indexes
-
 from app.graphql.schema import schema
-
 from app.ingestion.scheduler import (
     start_scheduler,
     stop_scheduler
 )
-
 from app.services.ingestion_service import ingest_countries
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
-    # 1. Connect to MongoDB
     await connect_to_database()
-
-    # 2. Create indexes
     await create_indexes()
-
-    # 3. Perform initial ingestion
     try:
         await ingest_countries()
     except Exception as error:
-        print(f"Initial ingestion failed: {error}")
-
-    # 4. Start periodic ingestion
+        logger.error(f"Initial ingestion failed: {error}")
     start_scheduler()
-
     yield
-
-    # Shutdown
     stop_scheduler()
-
     await close_database_connection()
 
 

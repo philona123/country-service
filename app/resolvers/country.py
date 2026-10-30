@@ -1,5 +1,7 @@
 import strawberry
 
+from app.graphql.inputs import AddCountryInput as AddCountryInputGQL
+from app.graphql.inputs import UpdateCountryInput as UpdateCountryInputGQL
 from app.graphql.mappers import country_to_type
 from app.graphql.types import (
     CountryConnection,
@@ -8,6 +10,10 @@ from app.graphql.types import (
     NearbyCountryType,
 )
 from app.services import country_service
+from app.utils.country import (
+    parse_add_country_input,
+    parse_update_country_input,
+)
 
 
 @strawberry.type
@@ -87,29 +93,13 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def add_country(
-        self,
-        code: str,
-        common_name: str,
-        official_name: str,
-    ) -> CountryType:
-        country = await country_service.add_country(
-            code,
-            common_name,
-            official_name,
-        )
+    async def add_country(self, input: AddCountryInputGQL) -> CountryType:
+        data = parse_add_country_input(input)
+        country = await country_service.add_country(data)
         return country_to_type(country)
 
     @strawberry.mutation
-    async def update_country_name(
-        self,
-        code: str,
-        common_name: str,
-        official_name: str,
-    ) -> CountryType:
-        country = await country_service.update_country_name(
-            code,
-            common_name,
-            official_name,
-        )
+    async def update_country(self, input: UpdateCountryInputGQL) -> CountryType:
+        data = parse_update_country_input(input)
+        country = await country_service.update_country(data)
         return country_to_type(country)

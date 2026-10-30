@@ -1,7 +1,6 @@
 from bson import ObjectId
 
 from app.database.connection import get_database
-from datetime import datetime, timezone
 
 
 def get_collection():
@@ -135,25 +134,15 @@ async def add_country(country: dict):
     return country
 
 
-async def update_country_name(
-    code: str,
-    common_name: str,
-    official_name: str
-):
+async def update_country(code: str, patch: dict):
     collection = get_collection()
 
     await collection.update_one(
-        {"code": code.upper()},
-        {
-            "$set": {
-                "name.common": common_name,
-                "name.official": official_name,
-                "updatedAt": datetime.now(timezone.utc),
-                "nameSource": "MANUAL"
-            }
-        }
+        {"code": code.upper(), "isActive": {"$ne": False}},
+        {"$set": patch},
     )
 
     return await collection.find_one({
-        "code": code.upper()
+        "code": code.upper(),
+        "isActive": {"$ne": False},
     })

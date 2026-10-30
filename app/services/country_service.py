@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from app.repositories import country_repository
 from app.schemas.inputs import (
     AddCountryInput,
@@ -8,9 +6,10 @@ from app.schemas.inputs import (
     LanguageInput,
     NearbyInput,
     PaginationInput,
-    UpdateCountryNameInput,
+    UpdateCountryInput,
 )
 from app.schemas.validation import parse_input
+from app.utils.country import build_country_document, build_country_update_patch
 
 
 async def get_countries(page: int, page_size: int):
@@ -66,63 +65,16 @@ async def get_countries_grouped_by_currency():
     return await country_repository.get_countries_grouped_by_currency()
 
 
-async def add_country(code: str, common_name: str, official_name: str):
-    data = parse_input(
-        AddCountryInput,
-        code=code,
-        common_name=common_name,
-        official_name=official_name,
-    )
-
+async def add_country(data: AddCountryInput):
     existing = await country_repository.get_country_by_code(data.code)
-
     if existing:
         raise ValueError(f"Country {data.code} already exists")
-
-    country = {
-        "code": data.code,
-        "name": {
-            "common": data.common_name,
-            "official": data.official_name,
-        },
-        "alpha3Code": None,
-        "capital": [],
-        "region": None,
-        "subregion": None,
-        "population": 0,
-        "area": None,
-        "coordinates": None,
-        "location": None,
-        "currencies": [],
-        "languages": [],
-        "isActive": True,
-        "sourceType": "MANUAL",
-        "createdAt": datetime.now(timezone.utc),
-        "updatedAt": datetime.now(timezone.utc),
-    }
-
-    return await country_repository.add_country(country)
+    return await country_repository.add_country(build_country_document(data))
 
 
-async def update_country_name(
-    code: str,
-    common_name: str,
-    official_name: str,
-):
-    data = parse_input(
-        UpdateCountryNameInput,
-        code=code,
-        common_name=common_name,
-        official_name=official_name,
-    )
-
+async def update_country(data: UpdateCountryInput):
     country = await country_repository.get_country_by_code(data.code)
-
     if not country:
         raise ValueError(f"Country {data.code} not found")
-
-    return await country_repository.update_country_name(
-        data.code,
-        data.common_name,
-        data.official_name,
-    )
+    patch = build_country_update_patch(data)
+    return await country_repository.update_country(data.code, patch)
