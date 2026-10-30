@@ -24,28 +24,20 @@ def transform_country(data: dict) -> dict:
                 latitude
             ]
         }
-
     return {
         "code": data["alpha2Code"].upper(),
-
         "name": {
             "common": data["name"],
             "official": data.get("officialName", data["name"]),
             "native": data.get("nativeName")
         },
-
         "alpha3Code": data.get("alpha3Code"),
-
         "numericCode": data.get("numericCode"),
-
         "capital": normalize_capital_list(data.get("capital")),
-
         "region": data.get("region"),
         "subregion": data.get("subregion"),
-
         "population": data.get("population", 0),
         "area": data.get("area"),
-
         "coordinates": (
             {
                 "latitude": latitude,
@@ -53,28 +45,16 @@ def transform_country(data: dict) -> dict:
             }
             if location else None
         ),
-
         "location": location,
-
         "currencies": data.get("currencies") or [],
         "languages": data.get("languages") or [],
-
         "timezones": data.get("timezones") or [],
         "borders": data.get("borders") or [],
         "callingCodes": data.get("callingCodes") or [],
-
         "topLevelDomains": data.get("topLevelDomain") or [],
-
-        "flag": {
-            "emoji": data.get("flag"),
-            "svg": (data.get("flags") or {}).get("svg"),
-            "png": (data.get("flags") or {}).get("png")
-        },
-
         "source": {
             "provider": "apicountries",
             "lastSyncedAt": datetime.now(timezone.utc)
         },
-
         "updatedAt": datetime.now(timezone.utc)
     }
