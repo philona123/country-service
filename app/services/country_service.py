@@ -1,3 +1,7 @@
+import logging
+
+from app.cache import country_cache
+from app.cache.country_cache import CACHE_MISS
 from app.repositories import country_repository
 from app.schemas.inputs import (
     AddCountryInput,
@@ -10,7 +14,7 @@ from app.schemas.inputs import (
 )
 from app.schemas.validation import parse_input
 from app.utils.country import build_country_document, build_country_update_patch
-import logging
+
 logger = logging.getLogger(__name__)
 
 async def get_countries(page: int, page_size: int):
@@ -34,16 +38,28 @@ async def get_countries(page: int, page_size: int):
 async def get_country_by_code(code: str):
     logger.info(f"get_country_by_code:Start - code: {code}")
     params = parse_input(CountryCodeInput, code=code)
+    cached = await country_cache.get_by_code(params.code)
+    if cached is not CACHE_MISS:
+        logger.info("get_country_by_code:End - cache hit code=%s", params.code)
+        return cached
+
     country = await country_repository.get_country_by_code(params.code)
-    logger.info(f"get_country_by_code:End - country: {country}")
+    await country_cache.put(country, code=params.code)
+    logger.info(f"get_country_by_code:End - country: {country is not None}")
     return country
 
 
-async def get_country_by_id(id: str):   
+async def get_country_by_id(id: str):
     logger.info(f"get_country_by_id:Start - id: {id}")
     params = parse_input(CountryIdInput, id=id)
+    cached = await country_cache.get_by_id(params.id)
+    if cached is not CACHE_MISS:
+        logger.info("get_country_by_id:End - cache hit id=%s", params.id)
+        return cached
+
     country = await country_repository.get_country_by_id(params.id)
-    logger.info(f"get_country_by_id:End - country: {country}")
+    await country_cache.put(country, country_id=params.id)
+    logger.info(f"get_country_by_id:End - country: {country is not None}")
     return country
 
 
@@ -86,6 +102,7 @@ async def add_country(data: AddCountryInput):
     if existing:
         raise ValueError(f"Country {data.code} already exists")
     country = await country_repository.add_country(build_country_document(data))
+    await country_cache.put(country)
     logger.info("add_country:End - id=%s code=%s", country.get("_id"), country.get("code"))
     return country
 
@@ -97,6 +114,8 @@ async def update_country(data: UpdateCountryInput):
         raise ValueError(f"Country {data.code} not found")
     patch = build_country_update_patch(data)
     country = await country_repository.update_country(data.code, patch)
+    if country:
+        await country_cache.put(country)
     logger.info(
         "update_country:End - id=%s code=%s",
         country.get("_id") if country else None,

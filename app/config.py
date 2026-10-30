@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     MONGODB_DATABASE: str = "country_db"
     COUNTRY_API_URL: str = "https://countries.dev"
     INGESTION_INTERVAL_HOURS: int = 24
+    REDIS_URL: str = "redis://localhost:6379/0"
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_SECONDS: int = 300
+    CACHE_NEGATIVE_TTL_SECONDS: int = 60
 
 
 settings = Settings()

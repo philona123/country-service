@@ -12,6 +12,7 @@ from app.database.connection import (
     connect_to_database,
     close_database_connection
 )
+from app.cache.connection import connect_to_redis, close_redis_connection
 from app.database.indexes import create_indexes
 from app.graphql.schema import schema
 from app.ingestion.scheduler import (
@@ -23,6 +24,7 @@ from app.services.ingestion_service import ingest_countries
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_to_database()
+    await connect_to_redis()
     await create_indexes()
     try:
         await ingest_countries()
@@ -31,6 +33,7 @@ async def lifespan(app: FastAPI):
     start_scheduler()
     yield
     stop_scheduler()
+    await close_redis_connection()
     await close_database_connection()
 
 
@@ -52,6 +55,9 @@ app.include_router(
 
 @app.get("/health")
 async def health():
+    from app.cache.connection import is_cache_available
+
     return {
-        "status": "healthy"
+        "status": "healthy",
+        "cache_enabled": is_cache_available(),
     }

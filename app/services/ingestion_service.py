@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from pymongo import UpdateOne
 
 from app.config import settings
+from app.cache.country_cache import invalidate_all_country_entities
 from app.database.connection import get_database
 from app.ingestion.client import CountryAPIClient
 from app.ingestion.transformer import transform_country
@@ -51,3 +52,4 @@ async def ingest_countries() -> None:
                 "modified": result.modified_count,
             }
         )
+        await invalidate_all_country_entities()
