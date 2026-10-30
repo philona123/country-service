@@ -1,0 +1,21 @@
+services:
+  mongodb:
+    # mongo:8 on some hosts pulls builds that refuse kernel 6.19–7.0.13 (see SERVER-121912).
+    # 8.0.30+ fixes the startup guard; GLIBC_TUNABLES is required below 7.0.14.
+    image: mongo:8.0.34
+    restart: unless-stopped
+    environment:
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  mongo_data:
