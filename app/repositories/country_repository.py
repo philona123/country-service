@@ -38,6 +38,13 @@ async def get_country_by_code(code: str):
         "isActive": {"$ne": False}
     })
 
+async def get_country_by_id(id: str):
+    collection = get_collection()
+    return await collection.find_one({
+        "_id": ObjectId(id),
+        "isActive": {"$ne": False}
+    })
+
 
 async def get_countries_by_language(language: str):
     collection = get_collection()

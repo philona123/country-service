@@ -9,15 +9,6 @@ from app.config import settings
 _client: AsyncMongoClient | None = None
 _database: AsyncDatabase | None = None
 
-_MONGO_START_HINT = (
-    f"Cannot connect to MongoDB at {settings.MONGODB_URI}.\n"
-    "Start it from the project root:\n"
-    "  docker compose up -d\n"
-    "If the container is crash-looping or the name is stuck:\n"
-    "  ./scripts/reset-mongo.sh"
-)
-
-
 def get_client() -> AsyncMongoClient:
     global _client
     if _client is None:
@@ -45,8 +36,7 @@ async def connect_to_database() -> None:
             if attempt < 5:
                 print(f"MongoDB not ready (attempt {attempt}/5), retrying...")
                 await asyncio.sleep(2)
-
-    raise RuntimeError(_MONGO_START_HINT) from last_error
+    raise last_error
 
 
 async def close_database_connection() -> None:

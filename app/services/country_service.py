@@ -32,6 +32,11 @@ async def get_country_by_code(code: str):
 
     return await country_repository.get_country_by_code(code)
 
+async def get_country_by_id(id: str):
+    if not id:
+        raise ValueError("Country ID cannot be empty")
+
+    return await country_repository.get_country_by_id(id)
 
 async def get_countries_by_language(language: str):
     if not language.strip():

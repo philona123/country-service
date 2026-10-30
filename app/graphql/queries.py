@@ -109,3 +109,10 @@ class Query:
             for group in groups
             if group.get("_id")
         ]
+
+    @strawberry.field
+    async def country_by_id(self, id: str) -> CountryType:
+        country = await country_service.get_country_by_id(id)
+        if not country:
+            return None
+        return country_to_type(country)
