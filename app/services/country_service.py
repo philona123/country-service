@@ -10,15 +10,18 @@ from app.schemas.inputs import (
 )
 from app.schemas.validation import parse_input
 from app.utils.country import build_country_document, build_country_update_patch
-
+import logging
+logger = logging.getLogger(__name__)
 
 async def get_countries(page: int, page_size: int):
+    logger.info(f"get_countries:Start - page: {page}, page_size: {page_size}")
     params = parse_input(PaginationInput, page=page, page_size=page_size)
     items, total_count = await country_repository.get_countries(
         params.page,
         params.page_size,
     )
     total_pages = (total_count + params.page_size - 1) // params.page_size
+    logger.info(f"get_countries:End - total_count: {total_count}, total_pages: {total_pages}")
     return {
         "items": items,
         "total_count": total_count,
@@ -29,18 +32,27 @@ async def get_countries(page: int, page_size: int):
 
 
 async def get_country_by_code(code: str):
+    logger.info(f"get_country_by_code:Start - code: {code}")
     params = parse_input(CountryCodeInput, code=code)
-    return await country_repository.get_country_by_code(params.code)
+    country = await country_repository.get_country_by_code(params.code)
+    logger.info(f"get_country_by_code:End - country: {country}")
+    return country
 
 
-async def get_country_by_id(id: str):
+async def get_country_by_id(id: str):   
+    logger.info(f"get_country_by_id:Start - id: {id}")
     params = parse_input(CountryIdInput, id=id)
-    return await country_repository.get_country_by_id(params.id)
+    country = await country_repository.get_country_by_id(params.id)
+    logger.info(f"get_country_by_id:End - country: {country}")
+    return country
 
 
 async def get_countries_by_language(language: str):
+    logger.info(f"get_countries_by_language:Start - language: {language}")
     params = parse_input(LanguageInput, language=language)
-    return await country_repository.get_countries_by_language(params.language)
+    countries = await country_repository.get_countries_by_language(params.language)
+    logger.info(f"get_countries_by_language:End - countries: {len(countries)}")
+    return countries
 
 
 async def get_nearby_countries(
@@ -48,17 +60,20 @@ async def get_nearby_countries(
     longitude: float,
     max_distance: float,
 ):
+    logger.info(f"get_nearby_countries:Start - latitude: {latitude}, longitude: {longitude}, max_distance: {max_distance}")
     params = parse_input(
         NearbyInput,
         latitude=latitude,
         longitude=longitude,
         max_distance=max_distance,
     )
-    return await country_repository.get_nearby_countries(
+    nearby_countries = await country_repository.get_nearby_countries(
         params.latitude,
         params.longitude,
         params.max_distance,
     )
+    logger.info(f"get_nearby_countries:End - nearby_countries: {len(nearby_countries)}")
+    return nearby_countries
 
 
 async def get_countries_grouped_by_currency():
@@ -66,15 +81,25 @@ async def get_countries_grouped_by_currency():
 
 
 async def add_country(data: AddCountryInput):
+    logger.info(f"add_country:Start")
     existing = await country_repository.get_country_by_code(data.code)
     if existing:
         raise ValueError(f"Country {data.code} already exists")
-    return await country_repository.add_country(build_country_document(data))
+    country = await country_repository.add_country(build_country_document(data))
+    logger.info("add_country:End - id=%s code=%s", country.get("_id"), country.get("code"))
+    return country
 
 
 async def update_country(data: UpdateCountryInput):
+    logger.info(f"update_country:Start - code: {data.code}")
     country = await country_repository.get_country_by_code(data.code)
     if not country:
         raise ValueError(f"Country {data.code} not found")
     patch = build_country_update_patch(data)
-    return await country_repository.update_country(data.code, patch)
+    country = await country_repository.update_country(data.code, patch)
+    logger.info(
+        "update_country:End - id=%s code=%s",
+        country.get("_id") if country else None,
+        data.code,
+    )
+    return country
