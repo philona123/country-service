@@ -86,38 +86,56 @@ async def get_nearby_countries(
 async def get_countries_grouped_by_currency():
     collection = get_collection()
 
+    # Project only fields needed for GraphQL before unwind/group to cut memory and wire size.
+    country_summary_projection = {
+        "_id": 1,
+        "code": 1,
+        "name": 1,
+        "alpha3Code": 1,
+        "capital": 1,
+        "region": 1,
+        "subregion": 1,
+        "population": 1,
+        "area": 1,
+        "coordinates": 1,
+        "languages": 1,
+        "currencies": 1,
+    }
+
     pipeline = [
         {
             "$match": {
                 "isActive": {"$ne": False},
-                "currencies.0": {"$exists": True}
+                "currencies.0": {"$exists": True},
             }
         },
-        {
-            "$unwind": "$currencies"
-        },
+        {"$project": country_summary_projection},
+        {"$unwind": "$currencies"},
         {
             "$group": {
                 "_id": "$currencies.code",
-                "name": {
-                    "$first": "$currencies.name"
-                },
-                "symbol": {
-                    "$first": "$currencies.symbol"
-                },
+                "name": {"$first": "$currencies.name"},
+                "symbol": {"$first": "$currencies.symbol"},
+                "countryCount": {"$sum": 1},
                 "countries": {
-                    "$push": "$$ROOT"
+                    "$push": {
+                        "_id": "$_id",
+                        "code": "$code",
+                        "name": "$name",
+                        "alpha3Code": "$alpha3Code",
+                        "capital": "$capital",
+                        "region": "$region",
+                        "subregion": "$subregion",
+                        "population": "$population",
+                        "area": "$area",
+                        "coordinates": "$coordinates",
+                        "languages": "$languages",
+                        "currencies": "$currencies",
+                    }
                 },
-                "countryCount": {
-                    "$sum": 1
-                }
             }
         },
-        {
-            "$sort": {
-                "_id": 1
-            }
-        }
+        {"$sort": {"_id": 1}},
     ]
 
     cursor = await collection.aggregate(pipeline)

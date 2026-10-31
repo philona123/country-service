@@ -6,4 +6,8 @@ async def create_indexes() -> None:
     await collection.create_index("name.common")
     await collection.create_index("languages.name")
     await collection.create_index("currencies.code")
+    await collection.create_index(
+        [("isActive", 1), ("currencies.code", 1)],
+        name="active_countries_by_currency",
+    )
     await collection.create_index([("location", "2dsphere")])
