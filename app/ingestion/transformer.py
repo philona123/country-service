@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.models.country import normalize_capital_list
+from app.models.country import normalize_capital_list, normalize_language_list
 
 
 def transform_country(data: dict) -> dict:
@@ -47,7 +47,7 @@ def transform_country(data: dict) -> dict:
         ),
         "location": location,
         "currencies": data.get("currencies") or [],
-        "languages": data.get("languages") or [],
+        "languages": normalize_language_list(data.get("languages")),
         "timezones": data.get("timezones") or [],
         "borders": data.get("borders") or [],
         "callingCodes": data.get("callingCodes") or [],

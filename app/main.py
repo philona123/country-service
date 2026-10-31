@@ -13,6 +13,7 @@ from app.graphql.schema import schema
 from app.ingestion.scheduler import start_scheduler, stop_scheduler
 from app.logging_config import configure_logging
 from app.services.ingestion_service import ingest_countries
+from app.cache.connection import is_cache_available
 
 configure_logging(settings.LOG_LEVEL)
 logger = logging.getLogger(__name__)
@@ -73,8 +74,6 @@ async def root():
 
 @app.get("/health")
 async def health():
-    from app.cache.connection import is_cache_available
-
     return {
         "status": "healthy",
         "cache_enabled": is_cache_available(),

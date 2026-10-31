@@ -10,7 +10,6 @@ class CurrencyInput:
 
 @strawberry.input
 class LanguageInput:
-    code: str | None = None
     name: str
     native_name: str | None = None
 

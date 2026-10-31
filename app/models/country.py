@@ -12,6 +12,31 @@ def normalize_capital_list(value) -> list[str]:
     return []
 
 
+def normalize_language_list(value) -> list[dict]:
+    if not value:
+        return []
+    if isinstance(value, dict):
+        items = [value]
+    elif isinstance(value, list):
+        items = value
+    else:
+        return []
+
+    result: list[dict] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name")
+        if not name:
+            continue
+        entry: dict = {"name": str(name)}
+        native_name = item.get("nativeName")
+        if native_name:
+            entry["nativeName"] = native_name
+        result.append(entry)
+    return result
+
+
 def normalize_currency_list(value) -> list[dict]:
     """Mongo $unwind leaves a single currency object instead of a list."""
     if not value:
@@ -34,7 +59,6 @@ class Currency(BaseModel):
     symbol: Optional[str] = None
 
 class Language(BaseModel):
-    code: Optional[str] = None
     name: str
     nativeName: Optional[str] = None
 

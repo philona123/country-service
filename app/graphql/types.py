@@ -15,7 +15,6 @@ class CurrencyType:
 
 @strawberry.type
 class LanguageType:
-    code: Optional[str]
     name: str
     nativeName: Optional[str]
 

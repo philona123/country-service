@@ -27,7 +27,7 @@ def sample_country(country_id: str) -> dict:
         "area": 3287263.0,
         "coordinates": {"latitude": 20.0, "longitude": 77.0},
         "currencies": [{"code": "INR", "name": "Rupee", "symbol": "₹"}],
-        "languages": [{"code": "hin", "name": "Hindi", "nativeName": "हिन्दी"}],
+        "languages": [{"name": "Hindi", "nativeName": "हिन्दी"}],
         "isActive": True,
         "sourceType": "MANUAL",
         "createdAt": datetime(2024, 1, 1, tzinfo=timezone.utc),

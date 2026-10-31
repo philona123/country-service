@@ -39,14 +39,13 @@ def _languages_to_dicts(
 ) -> list[dict]:
     if not languages:
         return []
-    return [
-        {
-            "code": language.code,
-            "name": language.name,
-            "nativeName": language.native_name,
-        }
-        for language in languages
-    ]
+    result = []
+    for language in languages:
+        entry: dict = {"name": language.name}
+        if language.native_name:
+            entry["nativeName"] = language.native_name
+        result.append(entry)
+    return result
 
 
 def parse_add_country_input(input: AddCountryInputGQL) -> AddCountryInput:

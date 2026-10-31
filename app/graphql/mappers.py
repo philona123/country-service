@@ -1,4 +1,8 @@
-from app.models.country import normalize_capital_list, normalize_currency_list
+from app.models.country import (
+    normalize_capital_list,
+    normalize_currency_list,
+    normalize_language_list,
+)
 from app.graphql.types import (
     CountryType,
     CountryNameType,
@@ -32,11 +36,10 @@ def country_to_type(document: dict) -> CountryType:
 
     languages = [
         LanguageType(
-            code=item.get("code"),
             name=item["name"],
-            nativeName=item.get("nativeName")
+            nativeName=item.get("nativeName"),
         )
-        for item in document.get("languages", [])
+        for item in normalize_language_list(document.get("languages"))
     ]
 
     return CountryType(
