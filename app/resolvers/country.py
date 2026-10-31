@@ -19,7 +19,7 @@ from app.utils.country import (
 @strawberry.type
 class Query:
     @strawberry.field
-    async def countries(
+    async def get_countries(
         self,
         page: int = 1,
         page_size: int = 10,
@@ -34,19 +34,19 @@ class Query:
         )
 
     @strawberry.field
-    async def country(self, code: str) -> CountryType | None:
+    async def get_country_by_code(self, code: str) -> CountryType | None:
         result = await country_service.get_country_by_code(code)
         if not result:
             return None
         return country_to_type(result)
 
     @strawberry.field
-    async def countries_by_language(self, language: str) -> list[CountryType]:
+    async def get_countries_by_language(self, language: str) -> list[CountryType]:
         countries = await country_service.get_countries_by_language(language)
         return [country_to_type(country) for country in countries]
 
     @strawberry.field
-    async def countries_nearby(
+    async def get_nearby_countries(
         self,
         latitude: float,
         longitude: float,
@@ -66,7 +66,7 @@ class Query:
         ]
 
     @strawberry.field
-    async def countries_by_currency(self) -> list[CurrencyGroupType]:
+    async def get_countries_grouped_by_currency(self) -> list[CurrencyGroupType]:
         groups = await country_service.get_countries_grouped_by_currency()
         return [
             CurrencyGroupType(
@@ -83,7 +83,7 @@ class Query:
         ]
 
     @strawberry.field
-    async def country_by_id(self, id: str) -> CountryType | None:
+    async def get_country_by_id(self, id: str) -> CountryType | None:
         country = await country_service.get_country_by_id(id)
         if not country:
             return None
@@ -93,7 +93,7 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def add_country(self, input: AddCountryInputGQL) -> CountryType:
+    async def create_country(self, input: AddCountryInputGQL) -> CountryType:
         data = parse_add_country_input(input)
         country = await country_service.add_country(data)
         return country_to_type(country)
