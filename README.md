@@ -1,6 +1,6 @@
 # Country Service
 
-A GraphQL API for country data backed by **MongoDB**, with **Redis** caching on single-country reads and periodic ingestion from [countries.dev](https://countries.dev).
+A GraphQL API for country data backed by **MongoDB**, with **Redis** caching on single-country reads and periodic ingestion from [apicountries](ttps://www.apicountries.com).
 
 ## Stack
 
