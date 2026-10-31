@@ -61,6 +61,16 @@ app.include_router(
 )
 
 
+@app.get("/")
+async def root():
+    return {
+        "message": "Country Information API",
+        "graphql": "/graphql",
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 async def health():
     from app.cache.connection import is_cache_available
