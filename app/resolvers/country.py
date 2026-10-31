@@ -18,9 +18,9 @@ from app.utils.country import (
 # Resolver for Queries and Mutation
 
 # Queries
-@strawberry.type
+@strawberry.type(description="Queries for country data")
 class Query:
-    @strawberry.field
+    @strawberry.field(description="Get all countries with pagination")
     async def get_countries(
         self,
         page: int = 1,
@@ -35,19 +35,19 @@ class Query:
             total_pages=result["total_pages"],
         )
 
-    @strawberry.field
+    @strawberry.field(description="Get a country by its code")
     async def get_country_by_code(self, code: str) -> CountryType | None:
         result = await country_service.get_country_by_code(code)
         if not result:
             return None
         return country_to_type(result)
 
-    @strawberry.field
+    @strawberry.field(description="Get countries by language")
     async def get_countries_by_language(self, language: str) -> list[CountryType]:
         countries = await country_service.get_countries_by_language(language)
         return [country_to_type(country) for country in countries]
 
-    @strawberry.field
+    @strawberry.field(description="Get nearby countries by latitude and longitude")
     async def get_nearby_countries(
         self,
         latitude: float,
@@ -67,7 +67,7 @@ class Query:
             for country in countries
         ]
 
-    @strawberry.field
+    @strawberry.field(description="Get countries grouped by currency")
     async def get_countries_grouped_by_currency(self) -> list[CurrencyGroupType]:
         groups = await country_service.get_countries_grouped_by_currency()
         return [
@@ -84,7 +84,7 @@ class Query:
             if group.get("_id")
         ]
 
-    @strawberry.field
+    @strawberry.field(description="Get a country by its ID")
     async def get_country_by_id(self, id: str) -> CountryType | None:
         country = await country_service.get_country_by_id(id)
         if not country:
@@ -93,15 +93,15 @@ class Query:
 
 
 # Mutations
-@strawberry.type
+@strawberry.type(description="Mutations for country data")
 class Mutation:
-    @strawberry.mutation
+    @strawberry.mutation(description="Add a new country")
     async def add_country(self, input: AddCountryInputGQL) -> CountryType:
         data = parse_add_country_input(input)
         country = await country_service.add_country(data)
         return country_to_type(country)
 
-    @strawberry.mutation
+    @strawberry.mutation(description="Update a country's name")
     async def update_country_name(
         self,
         input: UpdateCountryInputGQL,
