@@ -44,8 +44,8 @@ Resolver names are **camelCase** in the schema (e.g. `getCountryByCode`, `create
 **Queries:** `getCountries`, `getCountryByCode`, `getCountryById`, `getCountriesByLanguage`, `getNearbyCountries`, `getCountriesGroupedByCurrency`
 
 **Mutations:**
-- `createCountry(input)` — required in input: `code`, `commonName`, `officialName`; other fields optional
-- `updateCountry(id, code, input)` — pass **`id` or `code`** (if both, **id** wins); `input` is name fields only (`commonName`, `officialName`, `nativeName`, at least one)
+- `addCountry(input)` — required in input: `code`, `commonName`, `officialName`; other fields optional
+- `updateCountryName(id, code, input)` — pass **`id` or `code`** (if both, **id** wins); `input` is name fields only (`commonName`, `officialName`, `nativeName`, at least one)
 
 Use the GraphQL playground for full types and to try queries.
 
