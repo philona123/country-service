@@ -27,10 +27,10 @@ async def lifespan(app: FastAPI):
     await connect_to_redis()
     await create_indexes()
     try:
-        await ingest_countries()
+        await ingest_countries() # Ingesting the countries from the API during startup
     except Exception as error:
         logger.error(f"Initial ingestion failed: {error}")
-    start_scheduler()
+    start_scheduler() # Starting the scheduler for the ingestion of the countries
     yield
     stop_scheduler()
     await close_redis_connection()

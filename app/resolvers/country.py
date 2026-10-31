@@ -15,7 +15,9 @@ from app.utils.country import (
     parse_update_country_input,
 )
 
+# Resolver for Queries and Mutation
 
+# Queries
 @strawberry.type
 class Query:
     @strawberry.field
@@ -90,6 +92,7 @@ class Query:
         return country_to_type(country)
 
 
+# Mutations
 @strawberry.type
 class Mutation:
     @strawberry.mutation

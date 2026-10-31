@@ -8,7 +8,7 @@ from app.database.connection import get_database
 from app.ingestion.client import CountryAPIClient
 from app.ingestion.transformer import transform_country
 
-
+#Scheduler/Ingestion method to ingest the countries from the API
 async def ingest_countries() -> None:
     countries_collection = get_database()["countries"]
     client = CountryAPIClient(settings.COUNTRY_API_URL)

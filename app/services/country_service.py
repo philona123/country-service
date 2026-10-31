@@ -17,6 +17,8 @@ from app.utils.country import build_country_document, build_country_update_patch
 
 logger = logging.getLogger(__name__)
 
+
+# Service methods for the Queries and Mutations
 async def get_countries(page: int, page_size: int):
     logger.info(f"get_countries:Start - page: {page}, page_size: {page_size}")
     params = parse_input(PaginationInput, page=page, page_size=page_size)
