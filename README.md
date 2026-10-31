@@ -57,14 +57,13 @@ Unit tests (no Mongo required):
 uv run test
 ```
 
-Integration tests (MongoDB must be running; data goes to **`country_db_test`**, not `country_db`):
+Integration tests (Test MongoDB required):
 
 ```bash
-docker compose up -d
 uv run test-integration
 ```
 
-Run everything:
+Run all tests:
 
 ```bash
 uv run test-all
