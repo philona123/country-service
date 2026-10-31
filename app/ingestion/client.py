@@ -10,11 +10,10 @@ class CountryAPIClient:
             timeout=30.0,
             follow_redirects=True,
         ) as client:
-
+            # Fetching the countries from the API
             response = await client.get(
                 f"{self.base_url}/countries"
             )
-
             response.raise_for_status()
 
             data = response.json()

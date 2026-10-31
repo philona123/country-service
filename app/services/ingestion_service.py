@@ -16,7 +16,6 @@ async def ingest_countries() -> None:
     operations = []
     valid_count = 0
     failed_count = 0
-
     for raw_country in raw_countries:
         try:
             country = transform_country(raw_country)
