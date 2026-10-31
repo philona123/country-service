@@ -26,7 +26,7 @@ def get_database() -> AsyncDatabase:
 async def connect_to_database() -> None:
     last_error: Exception | None = None
     client = get_client()
-    for attempt in range(1, 6):
+    for attempt in range(1, 3):
         try:
             await client.admin.command("ping")
             print("Connected to MongoDB")
@@ -34,7 +34,7 @@ async def connect_to_database() -> None:
         except ServerSelectionTimeoutError as error:
             last_error = error
             if attempt < 5:
-                print(f"MongoDB not ready (attempt {attempt}/5), retrying...")
+                print(f"MongoDB not ready (attempt {attempt}/3), retrying...")
                 await asyncio.sleep(2)
     raise last_error
 

@@ -2,7 +2,6 @@ import asyncio
 import contextlib
 import logging
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 
