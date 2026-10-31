@@ -109,18 +109,35 @@ async def add_country(data: AddCountryInput):
     return country
 
 
-async def update_country(data: UpdateCountryInput):
-    logger.info(f"update_country:Start - code: {data.code}")
-    country = await country_repository.get_country_by_code(data.code)
-    if not country:
-        raise ValueError(f"Country {data.code} not found")
+async def update_country(
+    data: UpdateCountryInput,
+    *,
+    country_id: str | None = None,
+    code: str | None = None,
+):
+    if not country_id and not code:
+        raise ValueError("Either id or code must be provided")
+
+    if country_id:
+        id_params = parse_input(CountryIdInput, id=country_id)
+        country = await country_repository.get_country_by_id(id_params.id)
+        if not country:
+            raise ValueError(f"Country {id_params.id} not found")
+        logger.info("update_country:Start - id=%s", id_params.id)
+    else:
+        code_params = parse_input(CountryCodeInput, code=code)
+        country = await country_repository.get_country_by_code(code_params.code)
+        if not country:
+            raise ValueError(f"Country {code_params.code} not found")
+        logger.info("update_country:Start - code=%s", code_params.code)
+
     patch = build_country_update_patch(data)
-    country = await country_repository.update_country(data.code, patch)
-    if country:
-        await country_cache.put(country)
+    updated = await country_repository.update_country(country["code"], patch)
+    if updated:
+        await country_cache.put(updated)
     logger.info(
         "update_country:End - id=%s code=%s",
-        country.get("_id") if country else None,
-        data.code,
+        updated.get("_id") if updated else None,
+        country.get("code"),
     )
-    return country
+    return updated

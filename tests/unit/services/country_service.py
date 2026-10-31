@@ -136,8 +136,15 @@ async def test_add_country_persists_and_caches(sample_country):
 
 
 @pytest.mark.asyncio
-async def test_update_country_raises_when_not_found():
-    data = parse_input(UpdateCountryInput, code="XX", population=1)
+async def test_update_country_raises_when_neither_id_nor_code():
+    data = parse_input(UpdateCountryInput, common_name="Nobody")
+    with pytest.raises(ValueError, match="Either id or code"):
+        await country_service.update_country(data)
+
+
+@pytest.mark.asyncio
+async def test_update_country_raises_when_not_found_by_code():
+    data = parse_input(UpdateCountryInput, common_name="Nobody")
 
     with patch(
         "app.services.country_service.country_repository.get_country_by_code",
@@ -145,13 +152,16 @@ async def test_update_country_raises_when_not_found():
         return_value=None,
     ):
         with pytest.raises(ValueError, match="not found"):
-            await country_service.update_country(data)
+            await country_service.update_country(data, code="XX")
 
 
 @pytest.mark.asyncio
-async def test_update_country_persists_and_refreshes_cache(sample_country):
-    data = parse_input(UpdateCountryInput, code="IN", population=999)
-    updated = {**sample_country, "population": 999}
+async def test_update_country_by_code_persists_and_refreshes_cache(sample_country):
+    data = parse_input(UpdateCountryInput, common_name="India Updated")
+    updated = {
+        **sample_country,
+        "name": {**sample_country["name"], "common": "India Updated"},
+    }
 
     with patch(
         "app.services.country_service.country_repository.get_country_by_code",
@@ -167,9 +177,41 @@ async def test_update_country_persists_and_refreshes_cache(sample_country):
                 "app.services.country_service.country_cache.put",
                 new_callable=AsyncMock,
             ) as cache_put:
-                result = await country_service.update_country(data)
+                result = await country_service.update_country(data, code="IN")
 
-    assert result["population"] == 999
+    assert result["name"]["common"] == "India Updated"
     repo_update.assert_awaited_once()
     assert repo_update.await_args.args[0] == "IN"
     cache_put.assert_awaited_once_with(updated)
+
+
+@pytest.mark.asyncio
+async def test_update_country_by_id_when_both_id_and_code(sample_country, country_id):
+    data = parse_input(UpdateCountryInput, common_name="By Id")
+    updated = {
+        **sample_country,
+        "name": {**sample_country["name"], "common": "By Id"},
+    }
+
+    with patch(
+        "app.services.country_service.country_repository.get_country_by_id",
+        new_callable=AsyncMock,
+        return_value=sample_country,
+    ) as get_by_id:
+        with patch(
+            "app.services.country_service.country_repository.get_country_by_code",
+            new_callable=AsyncMock,
+        ) as get_by_code:
+            with patch(
+                "app.services.country_service.country_repository.update_country",
+                new_callable=AsyncMock,
+                return_value=updated,
+            ):
+                await country_service.update_country(
+                    data,
+                    country_id=country_id,
+                    code="XX",
+                )
+
+    get_by_id.assert_awaited_once()
+    get_by_code.assert_not_awaited()

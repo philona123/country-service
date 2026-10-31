@@ -72,28 +72,12 @@ def parse_add_country_input(input: AddCountryInputGQL) -> AddCountryInput:
 def parse_update_country_input(
     input: UpdateCountryInputGQL,
 ) -> UpdateCountryInput:
-    payload: dict = {
-        "code": input.code,
-        "common_name": input.common_name,
-        "official_name": input.official_name,
-        "native_name": input.native_name,
-        "alpha3_code": input.alpha3_code,
-        "region": input.region,
-        "subregion": input.subregion,
-        "population": input.population,
-        "area": input.area,
-        "capital": input.capital,
-        "latitude": input.latitude,
-        "longitude": input.longitude,
-    }
-
-    if input.currencies is not None:
-        payload["currencies"] = _currencies_to_dicts(input.currencies)
-
-    if input.languages is not None:
-        payload["languages"] = _languages_to_dicts(input.languages)
-
-    return parse_input(UpdateCountryInput, **payload)
+    return parse_input(
+        UpdateCountryInput,
+        common_name=input.common_name,
+        official_name=input.official_name,
+        native_name=input.native_name,
+    )
 
 
 def build_country_document(data: AddCountryInput) -> dict:
@@ -137,28 +121,6 @@ def build_country_update_patch(data: UpdateCountryInput) -> dict:
     if data.native_name is not None:
         patch["name.native"] = data.native_name
         touches_name = True
-    if data.alpha3_code is not None:
-        patch["alpha3Code"] = data.alpha3_code
-    if data.region is not None:
-        patch["region"] = data.region
-    if data.subregion is not None:
-        patch["subregion"] = data.subregion
-    if data.population is not None:
-        patch["population"] = data.population
-    if data.area is not None:
-        patch["area"] = data.area
-    if data.capital is not None:
-        patch["capital"] = data.capital
-    if data.currencies is not None:
-        patch["currencies"] = [c.model_dump() for c in data.currencies]
-    if data.languages is not None:
-        patch["languages"] = [language.model_dump() for language in data.languages]
-
-    if data.latitude is not None and data.longitude is not None:
-        coordinates, location = _geo_from_lat_lon(data.latitude, data.longitude)
-        patch["coordinates"] = coordinates
-        patch["location"] = location
-
     if touches_name:
         patch["nameSource"] = "MANUAL"
 

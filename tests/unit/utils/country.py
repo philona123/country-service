@@ -49,7 +49,7 @@ def test_build_country_document_with_geo():
 
 
 def test_build_country_update_patch_sets_name_source_when_name_changes():
-    data = parse_input(UpdateCountryInput, code="IN", common_name="New Name")
+    data = parse_input(UpdateCountryInput, common_name="New Name")
     patch = build_country_update_patch(data)
 
     assert patch["name.common"] == "New Name"
@@ -58,12 +58,13 @@ def test_build_country_update_patch_sets_name_source_when_name_changes():
     assert isinstance(patch["updatedAt"], datetime)
 
 
-def test_build_country_update_patch_skips_name_source_for_non_name_fields():
-    data = parse_input(UpdateCountryInput, code="IN", population=99)
+def test_build_country_update_patch_only_updates_provided_name_fields():
+    data = parse_input(UpdateCountryInput, native_name="Native Only")
     patch = build_country_update_patch(data)
 
-    assert patch["population"] == 99
-    assert "nameSource" not in patch
+    assert patch["name.native"] == "Native Only"
+    assert "name.common" not in patch
+    assert patch["nameSource"] == "MANUAL"
 
 
 def test_parse_add_country_input_from_graphql():

@@ -16,8 +16,6 @@ class CountryCodeInput(BaseModel):
     @field_validator("code", mode="before")
     @classmethod
     def normalize_code(cls, value: str) -> str:
-        if value is None:
-            raise ValueError("Country code is required")
         return str(value).upper().strip()
 
 
@@ -103,26 +101,9 @@ class AddCountryInput(BaseModel):
 
 
 class UpdateCountryInput(BaseModel):
-    code: str = Field(min_length=2, max_length=2)
-
     common_name: str | None = None
     official_name: str | None = None
     native_name: str | None = None
-    alpha3_code: str | None = None
-    region: str | None = None
-    subregion: str | None = None
-    population: int | None = Field(default=None, ge=0)
-    area: float | None = Field(default=None, ge=0)
-    capital: list[str] | None = None
-    latitude: float | None = Field(default=None, ge=-90, le=90)
-    longitude: float | None = Field(default=None, ge=-180, le=180)
-    currencies: list[Currency] | None = None
-    languages: list[Language] | None = None
-
-    @field_validator("code", mode="before")
-    @classmethod
-    def normalize_code(cls, value: str) -> str:
-        return str(value).upper().strip()
 
     @field_validator(
         "common_name",
@@ -139,34 +120,14 @@ class UpdateCountryInput(BaseModel):
             raise ValueError("Field cannot be empty when provided")
         return stripped
 
-    @field_validator("capital", mode="before")
-    @classmethod
-    def normalize_capital(cls, value: Any) -> list[str] | None:
-        if value is None:
-            return None
-        return normalize_capital_list(value)
-
     @model_validator(mode="after")
     def validate_patch(self) -> "UpdateCountryInput":
-        if (self.latitude is None) ^ (self.longitude is None):
-            raise ValueError("Both latitude and longitude must be provided together")
-
         patch_fields = (
             self.common_name,
             self.official_name,
             self.native_name,
-            self.alpha3_code,
-            self.region,
-            self.subregion,
-            self.population,
-            self.area,
-            self.capital,
-            self.latitude,
-            self.longitude,
-            self.currencies,
-            self.languages,
         )
         if all(value is None for value in patch_fields):
-            raise ValueError("At least one field must be provided to update")
+            raise ValueError("At least one name field must be provided to update")
 
         return self

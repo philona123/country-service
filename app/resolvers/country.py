@@ -102,7 +102,16 @@ class Mutation:
         return country_to_type(country)
 
     @strawberry.mutation
-    async def update_country(self, input: UpdateCountryInputGQL) -> CountryType:
+    async def update_country(
+        self,
+        input: UpdateCountryInputGQL,
+        id: str | None = None,
+        code: str | None = None,
+    ) -> CountryType:
         data = parse_update_country_input(input)
-        country = await country_service.update_country(data)
+        country = await country_service.update_country(
+            data,
+            country_id=id,
+            code=code,
+        )
         return country_to_type(country)

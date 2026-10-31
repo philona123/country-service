@@ -75,20 +75,23 @@ def test_add_country_input_rejects_empty_name():
 
 
 def test_update_country_requires_at_least_one_patch_field():
-    with pytest.raises(ValueError, match="At least one field"):
-        parse_input(UpdateCountryInput, code="IN")
+    with pytest.raises(ValueError, match="At least one name field"):
+        parse_input(UpdateCountryInput)
 
 
 def test_update_country_partial_patch():
-    result = parse_input(UpdateCountryInput, code="in", population=1)
-    assert result.code == "IN"
-    assert result.population == 1
+    result = parse_input(
+        UpdateCountryInput,
+        common_name="Updated",
+        official_name="Updated Official",
+    )
+    assert result.common_name == "Updated"
+    assert result.official_name == "Updated Official"
 
 
 def test_update_country_rejects_empty_optional_name():
     with pytest.raises(ValueError, match="cannot be empty"):
         parse_input(
             UpdateCountryInput,
-            code="IN",
             common_name="   ",
         )

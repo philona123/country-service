@@ -11,5 +11,12 @@ def configure_logging(level: str = "INFO") -> None:
     handler.setFormatter(formatter)
     root.addHandler(handler)
     
-    for name in ("httpx", "httpcore", "pymongo", "uvicorn.access"):
+    for name in (
+        "httpx",
+        "httpcore",
+        "pymongo",
+        "uvicorn.access",
+        "apscheduler",
+        "watchfiles",
+    ):
         logging.getLogger(name).setLevel(logging.WARNING)
