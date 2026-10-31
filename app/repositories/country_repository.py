@@ -82,7 +82,7 @@ async def get_nearby_countries(
     cursor = await collection.aggregate(pipeline)
     return await cursor.to_list(length=None)
 
-
+# Efficient database query that groups countries by currency.
 async def get_countries_grouped_by_currency():
     collection = get_collection()
 

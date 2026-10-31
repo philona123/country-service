@@ -96,13 +96,13 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def create_country(self, input: AddCountryInputGQL) -> CountryType:
+    async def add_country(self, input: AddCountryInputGQL) -> CountryType:
         data = parse_add_country_input(input)
         country = await country_service.add_country(data)
         return country_to_type(country)
 
     @strawberry.mutation
-    async def update_country(
+    async def update_country_name(
         self,
         input: UpdateCountryInputGQL,
         id: str | None = None,
