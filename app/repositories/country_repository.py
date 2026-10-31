@@ -1,4 +1,7 @@
+from datetime import datetime, timezone
+
 from bson import ObjectId
+from pymongo import UpdateOne
 
 from app.database.connection import get_database
 
@@ -140,6 +143,27 @@ async def get_countries_grouped_by_currency():
 
     cursor = await collection.aggregate(pipeline)
     return await cursor.to_list(length=None)
+
+
+def country_upsert_operation(country: dict) -> UpdateOne:
+    return UpdateOne(
+        {"code": country["code"]},
+        {
+            "$set": country,
+            "$setOnInsert": {
+                "createdAt": datetime.now(timezone.utc),
+            },
+        },
+        upsert=True,
+    )
+
+
+async def bulk_upsert_countries(operations: list[UpdateOne]):
+    if not operations:
+        return None
+
+    collection = get_collection()
+    return await collection.bulk_write(operations, ordered=False)
 
 
 async def add_country(country: dict):

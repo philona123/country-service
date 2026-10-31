@@ -1,16 +1,11 @@
-from datetime import datetime, timezone
-
-from pymongo import UpdateOne
-
-from app.config import settings
 from app.cache.country_cache import invalidate_all_country_entities
-from app.database.connection import get_database
+from app.config import settings
 from app.ingestion.client import CountryAPIClient
 from app.ingestion.transformer import transform_country
+from app.repositories import country_repository
 
-#Scheduler/Ingestion method to ingest the countries from the API
+
 async def ingest_countries() -> None:
-    countries_collection = get_database()["countries"]
     client = CountryAPIClient(settings.COUNTRY_API_URL)
     raw_countries = await client.fetch_countries()
     operations = []
@@ -19,29 +14,15 @@ async def ingest_countries() -> None:
     for raw_country in raw_countries:
         try:
             country = transform_country(raw_country)
-            operations.append(
-                UpdateOne(
-                    {"code": country["code"]},
-                    {
-                        "$set": country,
-                        "$setOnInsert": {
-                            "createdAt": datetime.now(timezone.utc)
-                        },
-                    },
-                    upsert=True,
-                )
-            )
+            operations.append(country_repository.country_upsert_operation(country))
             valid_count += 1
 
         except Exception as error:
             failed_count += 1
             print(f"Country ingestion failed: {error}")
 
-    if operations:
-        result = await countries_collection.bulk_write(
-            operations,
-            ordered=False,
-        )
+    result = await country_repository.bulk_upsert_countries(operations)
+    if result is not None:
         print(
             {
                 "fetched": len(raw_countries),

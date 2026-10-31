@@ -30,6 +30,8 @@ With pip instead of uv: `python -m venv venv && source venv/bin/activate && pip 
 uv run dev
 ```
 
+On startup the API connects to Mongo/Redis and creates indexes, then **accepts requests immediately**. The first countries sync runs in a **background asyncio task** (same process); scheduled ingestion uses APScheduler. Until that first sync finishes, list/country queries may be empty.
+
 | URL | Description |
 |-----|-------------|
 | http://127.0.0.1:8000/graphql | GraphQL + schema docs |

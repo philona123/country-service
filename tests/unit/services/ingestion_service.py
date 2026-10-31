@@ -25,20 +25,15 @@ async def test_ingest_countries_bulk_writes_and_invalidates_cache():
     bulk_result.upserted_count = 1
     bulk_result.modified_count = 0
 
-    mock_collection = MagicMock()
-    mock_collection.bulk_write = AsyncMock(return_value=bulk_result)
-
-    mock_database = MagicMock()
-    mock_database.__getitem__ = MagicMock(return_value=mock_collection)
-
     with patch(
         "app.services.ingestion_service.CountryAPIClient",
         return_value=mock_client,
     ):
         with patch(
-            "app.services.ingestion_service.get_database",
-            return_value=mock_database,
-        ):
+            "app.services.ingestion_service.country_repository.bulk_upsert_countries",
+            new_callable=AsyncMock,
+            return_value=bulk_result,
+        ) as bulk_upsert:
             with patch(
                 "app.services.ingestion_service.invalidate_all_country_entities",
                 new_callable=AsyncMock,
@@ -46,10 +41,8 @@ async def test_ingest_countries_bulk_writes_and_invalidates_cache():
                 await ingestion_service.ingest_countries()
 
     mock_client.fetch_countries.assert_awaited_once()
-    mock_collection.bulk_write.assert_awaited_once()
-    bulk_args = mock_collection.bulk_write.await_args
-    assert len(bulk_args.args[0]) == 1
-    assert bulk_args.kwargs["ordered"] is False
+    bulk_upsert.assert_awaited_once()
+    assert len(bulk_upsert.await_args.args[0]) == 1
     invalidate.assert_awaited_once()
 
 
@@ -67,27 +60,22 @@ async def test_ingest_countries_skips_invalid_and_still_writes_valid():
     bulk_result.upserted_count = 1
     bulk_result.modified_count = 0
 
-    mock_collection = MagicMock()
-    mock_collection.bulk_write = AsyncMock(return_value=bulk_result)
-
-    mock_database = MagicMock()
-    mock_database.__getitem__ = MagicMock(return_value=mock_collection)
-
     with patch(
         "app.services.ingestion_service.CountryAPIClient",
         return_value=mock_client,
     ):
         with patch(
-            "app.services.ingestion_service.get_database",
-            return_value=mock_database,
-        ):
+            "app.services.ingestion_service.country_repository.bulk_upsert_countries",
+            new_callable=AsyncMock,
+            return_value=bulk_result,
+        ) as bulk_upsert:
             with patch(
                 "app.services.ingestion_service.invalidate_all_country_entities",
                 new_callable=AsyncMock,
             ) as invalidate:
                 await ingestion_service.ingest_countries()
 
-    assert len(mock_collection.bulk_write.await_args.args[0]) == 1
+    assert len(bulk_upsert.await_args.args[0]) == 1
     invalidate.assert_awaited_once()
 
 
@@ -98,25 +86,20 @@ async def test_ingest_countries_does_not_write_when_all_invalid():
     mock_client = MagicMock()
     mock_client.fetch_countries = AsyncMock(return_value=raw_countries)
 
-    mock_collection = MagicMock()
-    mock_collection.bulk_write = AsyncMock()
-
-    mock_database = MagicMock()
-    mock_database.__getitem__ = MagicMock(return_value=mock_collection)
-
     with patch(
         "app.services.ingestion_service.CountryAPIClient",
         return_value=mock_client,
     ):
         with patch(
-            "app.services.ingestion_service.get_database",
-            return_value=mock_database,
-        ):
+            "app.services.ingestion_service.country_repository.bulk_upsert_countries",
+            new_callable=AsyncMock,
+            return_value=None,
+        ) as bulk_upsert:
             with patch(
                 "app.services.ingestion_service.invalidate_all_country_entities",
                 new_callable=AsyncMock,
             ) as invalidate:
                 await ingestion_service.ingest_countries()
 
-    mock_collection.bulk_write.assert_not_awaited()
+    bulk_upsert.assert_awaited_once_with([])
     invalidate.assert_not_awaited()
