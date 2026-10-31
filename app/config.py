@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     MONGODB_URI: str = "mongodb://localhost:27017"
     MONGODB_DATABASE: str = "country_db"
+    MONGODB_TEST_DATABASE: str = "country_db_test"
     COUNTRY_API_URL: str = "https://www.apicountries.com"
     INGESTION_INTERVAL_HOURS: int = 24
     REDIS_URL: str = "redis://localhost:6379/0"

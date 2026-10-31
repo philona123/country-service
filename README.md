@@ -51,9 +51,26 @@ Use the GraphQL playground for full types and to try queries.
 
 ## Tests
 
+Unit tests (no Mongo required):
+
 ```bash
 uv run test
 ```
+
+Integration tests (MongoDB must be running; data goes to **`country_db_test`**, not `country_db`):
+
+```bash
+docker compose up -d
+uv run test-integration
+```
+
+Run everything:
+
+```bash
+uv run test-all
+```
+
+Integration tests are skipped automatically if MongoDB is unreachable.
 
 ## Configuration
 
